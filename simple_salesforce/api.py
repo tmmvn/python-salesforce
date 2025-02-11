@@ -246,6 +246,21 @@ class Salesforce:
                 domain=self.domain
                 )
             self._refresh_session()
+        elif all(arg is not None for arg in (
+                username, password)
+                    ):
+            self.auth_type = 'jforce'
+            self._salesforce_login_partial = partial(
+                SalesforceLogin,
+                session=self.session,
+                username=username,
+                password=password,
+                sf_version=self.sf_version,
+                proxies=self.proxies,
+                client_id=client_id,
+                domain=self.domain
+                )
+            self._refresh_session()
         else:
             raise TypeError(
                 'You must provide login information or an instance and token'
