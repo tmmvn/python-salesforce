@@ -243,7 +243,7 @@ def soap_login(
             except_code = response.status_code
             except_msg = response.content.decode()
         raise SalesforceAuthenticationFailed(except_code, except_msg)
-
+        print("Login successful, parsing response...")
     session_id = getUniqueElementValueFromXmlString(
         response.content, 'sessionId')
     server_url = getUniqueElementValueFromXmlString(
@@ -256,7 +256,7 @@ def soap_login(
             response.content, 'sf:exceptionMessage'
         ) or 'UNKNOWN_EXCEPTION_MESSAGE'
         raise SalesforceAuthenticationFailed(except_code, except_msg)
-
+    print(f"Server URL: {server_url}")
     sf_instance = (server_url
                    .replace('http://', '')
                    .replace('https://', '')

@@ -304,6 +304,7 @@ class Salesforce:
         return self._mdapi
 
     def _generate_headers(self) -> None:
+        print(f"Generating headers with session id {self.session_id}")
         """Utility to generate headers when refreshing the session"""
         self.headers = {
             'Content-Type': 'application/json',
