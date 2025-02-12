@@ -92,7 +92,7 @@ def SalesforceLogin(
 
     # Check if token authentication is used
     if security_token is not None:
-        # Security Token Soap request body
+        print("Security token login")
         login_soap_request_body = f"""<?xml version="1.0" encoding="utf-8" ?>
 <env:Envelope
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -112,11 +112,11 @@ def SalesforceLogin(
         </n1:login>
     </env:Body>
 </env:Envelope>"""
-
     elif username is not None and \
             password is not None and \
             consumer_key is not None and \
             consumer_secret is not None:
+        print("Token login")
         token_data = {
             'grant_type': 'password',
             'client_id': consumer_key,
@@ -128,10 +128,8 @@ def SalesforceLogin(
             f'https://{domain}.salesforce.com/services/oauth2/token',
             token_data, domain, consumer_key,
             None, proxies, session)
-
-    # Check if IP Filtering is used in conjunction with organizationId
     elif organizationId is not None:
-        # IP Filtering Login Soap request body
+        print("Org ID login")
         login_soap_request_body = f"""<?xml version="1.0" encoding="utf-8" ?>
 <soapenv:Envelope
         xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -153,27 +151,22 @@ def SalesforceLogin(
     </soapenv:Body>
 </soapenv:Envelope>"""
     elif username is not None and password is not None:
-        # IP Filtering for non self-service users
-        login_soap_request_body = f"""<?xml version="1.0" encoding="utf-8" ?>
-<soapenv:Envelope
-        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-        xmlns:urn="urn:partner.soap.sforce.com">
-    <soapenv:Header>
-        <urn:CallOptions>
-            <urn:client>{client_id}</urn:client>
-            <urn:defaultNamespace>sf</urn:defaultNamespace>
-        </urn:CallOptions>
-    </soapenv:Header>
-    <soapenv:Body>
-        <urn:login>
-            <urn:username>{username}</urn:username>
-            <urn:password>{password}</urn:password>
-        </urn:login>
-    </soapenv:Body>
-</soapenv:Envelope>"""
+        print("JSForce Login")
+        login_soap_request_body = ''.join([
+            '<se:Envelope xmlns:se="http://schemas.xmlsoap.org/soap/envelope/">',
+            '<se:Header/>',
+            '<se:Body>',
+            '<login xmlns="urn:partner.soap.sforce.com">',
+            f'<username>{username}</username>',
+            f'<password>{password}</password>',
+            '</login>',
+            '</se:Body>',
+            '</se:Envelope>',
+        ])
     elif username is not None and \
             consumer_key is not None and \
             (privatekey_file is not None or privatekey is not None):
+        print("Key token login")
         token_domain = instance_url if instance_url is not None else domain
         expiration = datetime.now(timezone.utc) + timedelta(minutes=3)
         payload = {
@@ -187,18 +180,17 @@ def SalesforceLogin(
         else:
             key = cast(str, privatekey)
         assertion = jwt.encode(payload, key, algorithm='RS256')
-
         token_data = {
             'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
             'assertion': assertion
             }
-
         return token_login(
             f'https://{token_domain}.salesforce.com/services/oauth2/token',
             token_data, domain, consumer_key,
             None, proxies, session)
     elif consumer_key is not None and consumer_secret is not None and \
             domain is not None and domain not in ('login', 'test'):
+        print("Client credentials login")
         token_data = {'grant_type': 'client_credentials'}
         authorization = f'{consumer_key}:{consumer_secret}'
         encoded = base64.b64encode(authorization.encode()).decode()
@@ -221,7 +213,7 @@ def SalesforceLogin(
     login_soap_request_headers = {
         'content-type': 'text/xml',
         'charset': 'UTF-8',
-        'SOAPAction': 'login'
+        'SOAPAction': ''
         }
 
     return soap_login(soap_url, login_soap_request_body,
