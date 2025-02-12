@@ -3,7 +3,7 @@
 from datetime import datetime
 
 # has to be defined prior to login import
-DEFAULT_API_VERSION = '59.0'
+DEFAULT_API_VERSION = '50.0'
 import base64
 import json
 import logging
@@ -265,9 +265,8 @@ class Salesforce:
             raise TypeError(
                 'You must provide login information or an instance and token'
                 )
-
+        print(f"Auth type: {self.auth_type}")
         self.auth_site = f'https://{self.domain}.salesforce.com'
-
         self.headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + self.session_id,
