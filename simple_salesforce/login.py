@@ -229,7 +229,7 @@ def soap_login(
     """Process SOAP specific login workflow."""
     response = (session or requests).post(
         soap_url, request_body, headers=headers, proxies=proxies)
-
+    print(response.status_code)
     if response.status_code != 200:
         except_code: Union[str, int, None]
         except_msg: str
@@ -243,7 +243,7 @@ def soap_login(
             except_code = response.status_code
             except_msg = response.content.decode()
         raise SalesforceAuthenticationFailed(except_code, except_msg)
-        print("Login successful, parsing response...")
+    print("Login successful, parsing response...")
     session_id = getUniqueElementValueFromXmlString(
         response.content, 'sessionId')
     server_url = getUniqueElementValueFromXmlString(
