@@ -152,17 +152,23 @@ def SalesforceLogin(
 </soapenv:Envelope>"""
     elif username is not None and password is not None:
         print("JSForce Login")
-        login_soap_request_body = ''.join([
-            '<se:Envelope xmlns:se="http://schemas.xmlsoap.org/soap/envelope/">',
-            '<se:Header/>',
-            '<se:Body>',
-            '<login xmlns="urn:partner.soap.sforce.com">',
-            f'<username>{username}</username>',
-            f'<password>{password}</password>',
-            '</login>',
-            '</se:Body>',
-            '</se:Envelope>',
-        ])
+        login_soap_request_body = f"""<?xml version="1.0" encoding="utf-8" ?>
+        <soapenv:Envelope
+                xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                xmlns:urn="urn:partner.soap.sforce.com">
+            <soapenv:Header>
+                <urn:CallOptions>
+                    <urn:client>{client_id}</urn:client>
+                    <urn:defaultNamespace>sf</urn:defaultNamespace>
+                </urn:CallOptions>
+            </soapenv:Header>
+            <soapenv:Body>
+                <urn:login>
+                    <urn:username>{username}</urn:username>
+                    <urn:password>{password}</urn:password>
+                </urn:login>
+            </soapenv:Body>
+        </soapenv:Envelope>"""
     elif username is not None and \
             consumer_key is not None and \
             (privatekey_file is not None or privatekey is not None):
@@ -213,7 +219,7 @@ def SalesforceLogin(
     login_soap_request_headers = {
         'content-type': 'text/xml',
         'charset': 'UTF-8',
-        'SOAPAction': ''
+        'SOAPAction': 'login'
         }
 
     return soap_login(soap_url, login_soap_request_body,
